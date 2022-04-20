@@ -28,12 +28,34 @@ describe("compile Result", function () {
 
     //create a candidate
     //cast vote for the candidate
-    await voting.addCandidate("Harr")
+    await voting.addCandidate("Harry")
     await voting.vote(0);
     const result = await voting.compileResult();
 
     //test for the values
-    expect(await result[0][0]).to.equal("Harr");
+    expect(await result[0][0]).to.equal("Harry");
     expect(await result[1][0]).to.equal("1");
+  });
+});
+
+describe("vote", function () {
+  it("inrement candidates vote by 1", async function () {
+    //deploy contract
+    const Voting = await ethers.getContractFactory("Voting");
+    const voting = await Voting.deploy();
+    await voting.deployed();
+
+    //cast vote with no candidtae registered
+    await voting.addCandidate("Harry")
+
+    await voting.vote(0);
+
+    const result = await voting.compileResult();
+    
+
+    //test for the values
+    expect(await result[1][0]).to.be.not.undefined;
+    expect(await result[1][0]).to.be.not.null;
+    expect(await result[1][0].toNumber()).to.equal(1);
   });
 });

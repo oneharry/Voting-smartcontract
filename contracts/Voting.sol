@@ -36,7 +36,7 @@ contract Voting {
     //user can only vote once
     modifier canVote {
         require(!allVoters[msg.sender], "You can vote only once");
-        // require(candidateCount > 0, "No candidate added");
+        require(candidateCount > 0, "No candidate added");
         _;
     }
 
