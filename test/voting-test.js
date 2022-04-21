@@ -1,61 +1,131 @@
-const { expect } = require("chai");
+const { expect, assert } = require("chai");
 const { ethers } = require("hardhat");
 
 
-describe("getAllCandidates", function () {
-  it("Should return names and ids of candidates", async function () {
+describe("Voting", () => {
+  let voting;
+  before(async () => {
     const Voting = await ethers.getContractFactory("Voting");
-    const voting = await Voting.deploy();
-    await voting.deployed();
-
-  //check that a candidate has been added
-    const tx = await voting.addCandidate("Harr")
-
-    //get the candidates
-    const candidate = await voting.getAllCandidates();
-
-
-    expect(await candidate[0][0]).to.equal("Harr");
-  });
-});
-
-describe("compile Result", function () {
-  it("Should return names and votecounts", async function () {
-    //deploy contract
-    const Voting = await ethers.getContractFactory("Voting");
-    const voting = await Voting.deploy();
-    await voting.deployed();
-
-    //create a candidate
-    //cast vote for the candidate
-    await voting.addCandidate("Harry")
-    await voting.vote(0);
-    const result = await voting.compileResult();
-
-    //test for the values
-    expect(await result[0][0]).to.equal("Harry");
-    expect(await result[1][0]).to.equal("1");
-  });
-});
-
-describe("vote", function () {
-  it("inrement candidates vote by 1", async function () {
-    //deploy contract
-    const Voting = await ethers.getContractFactory("Voting");
-    const voting = await Voting.deploy();
-    await voting.deployed();
-
-    //cast vote with no candidtae registered
-    await voting.addCandidate("Harry")
-
-    await voting.vote(0);
-
-    const result = await voting.compileResult();
+    voting = await Voting.deploy();
     
+  })
 
-    //test for the values
-    expect(await result[1][0]).to.be.not.undefined;
-    expect(await result[1][0]).to.be.not.null;
-    expect(await result[1][0].toNumber()).to.equal(1);
+  //ADD CANDIDATE
+  describe("addCandidate", () => {
+    it("Add candidate for election", async () => {
+      await voting.deployed();
+      //candidate  added
+      await voting.addCandidate("Harry")
+      assert(true);
+    })
+
+    it("can't add one candidate multiple times", async () => {
+      await voting.deployed();
+      
+      
+      try {
+        await voting.addCandidate("Harry");
+        assert(false)
+      } catch (error) {
+        assert(error)
+      }
+    })
+  })
+
+  //CAST VOTE
+  describe("vote", function () {
+    it("cannot vote when voting is disabled", async function () {
+      await voting.deployed();
+      try {
+      //disable voting
+      //try voting
+        await voting.disableVoting();
+        await voting.vote(0)
+        assert(false);
+      } catch (error) {
+        assert(error)
+      }
+    });
+  
+    it("increment candidates vote by 1", async function () {
+
+      await voting.deployed();
+
+      //enable voting
+      await voting.enableVoting();
+      await voting.vote(0);
+      
+      assert(true)
+    });
+  
+    it("Voters can only vote once", async function () {
+      await voting.deployed();
+      try {
+
+        await voting.vote(0);
+        assert(false);
+      } catch (error) {
+        assert(error)
+      }
+  
+    
+    });
+  
+    it("Voters can vote for only one candidate", async function () {
+      
+      await voting.deployed();
+      try {
+        //adding another candidate
+        //try voting for new candidate
+        await voting.addCandidate("test")
+        await voting.vote(1);
+        assert(false);
+      } catch (error) {
+        assert(error)
+      }
+    });
+  
+
+  
   });
-});
+
+
+  //GET ALL CANDIDATES
+  describe("getAllCandidates", function () {
+
+    it("Should return names and ids of candidates", async function () {
+
+      await voting.deployed();
+
+      //get the candidates
+      const candidate = await voting.getAllCandidates();
+  
+  
+      expect(await candidate[0][0]).to.equal("Harry");
+    });
+  });
+
+
+  //GETS ALL RESULT
+  describe("compile Result", function () {
+    it("Should return names and votecounts", async function () {
+      await voting.deployed();
+  
+      //add more candidates
+
+      await voting.addCandidate("demo")
+
+      const result = await voting.compileResult();
+  
+      //test for the values
+      expect(await result[0][0]).to.equal("Harry");
+      expect(await result[1][0].toNumber()).to.equal(1);
+      expect(await result[0][1]).to.equal("test");
+      expect(await result[1][1].toNumber()).to.equal(0);
+      expect(await result[0][2]).to.equal("demo");
+      expect(await result[1][2].toNumber()).to.equal(0);
+    });
+  });
+  
+
+})

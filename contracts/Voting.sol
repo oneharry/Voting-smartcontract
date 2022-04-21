@@ -6,6 +6,13 @@ contract Voting {
     //counter for every candidate; will form the id in the mapping
     uint256 candidateCount = 0;
 
+    //enable/disable voting
+    bool public votingStatus;
+
+    constructor () {
+        votingStatus = true;
+    }
+
     //EVENTS
     //events for voting and add candidate
     event AddCandidate(string name);
@@ -34,15 +41,17 @@ contract Voting {
 
     //checks for who can vote
     //user can only vote once
+    //Voting must be enabled
     modifier canVote {
         require(!allVoters[msg.sender], "You can vote only once");
         require(candidateCount > 0, "No candidate added");
+        require(votingStatus, "Voting closed");
         _;
     }
 
     //which candidate is eligible
     modifier eligibleCandidate(string memory _name) {
-        
+            //a name can only be registered once
             require(!candidateNames[_name], "Name already exists"  );
             _;
     }
@@ -129,6 +138,18 @@ contract Voting {
         }
         //return names and votes
         return(names, votes);
+    }
+
+    //enable voting function
+    function enableVoting()
+    public {
+        votingStatus = true;
+    }
+
+    // disableVoting function
+    function disableVoting()
+    public {
+        votingStatus = false;
     }
 
 }
