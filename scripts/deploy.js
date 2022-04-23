@@ -14,17 +14,18 @@ async function main() {
   // await hre.run('compile');
 
   // We get the contract to deploy
-  const Voting = await hre.ethers.getContractFactory("Voting");
-  const voting = await Voting.deploy();
+  /*    const Voting = await hre.ethers.getContractFactory("Voting");
+    const voting = await Voting.deploy();
 
-  await voting.deployed();
+    await voting.deployed();
 
-  console.log("Voting deployed to:", voting.address);
-
+    console.log("Voting deployed to:", voting.address); */
 
   //deploying the manage contract
   const ManageVoting = await hre.ethers.getContractFactory("ManageVoting");
-  const manageVoting = await ManageVoting.deploy();
+  const manageVoting = await ManageVoting.deploy(
+    "0xc0136cd83a5e1cb89a5bcc495831a8ba5c38276e"
+  );
 
   await manageVoting.deployed();
 
