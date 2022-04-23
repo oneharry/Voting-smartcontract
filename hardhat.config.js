@@ -2,7 +2,8 @@ require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-etherscan");
 require("dotenv").config();
 
-const {ALCHEMY_PRIVATE_URL, RINKEBY_API_KEY, ETHERSCAN_API_KEY} = process.env;
+const { ALCHEMY_API_KEY_URL, RINKEBY_PRIVATE_KEY, ETHERSCAN_API_KEY } =
+  process.env;
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -24,11 +25,11 @@ module.exports = {
   solidity: "0.8.4",
   networks: {
     rinkeby: {
-      url: ALCHEMY_PRIVATE_URL,
-      accounts: [RINKEBY_API_KEY]
-    }
+      url: ALCHEMY_API_KEY_URL,
+      accounts: [RINKEBY_PRIVATE_KEY],
+    },
   },
   etherscan: {
-    apiKey: ETHERSCAN_API_KEY
-  }
+    apiKey: ETHERSCAN_API_KEY,
+  },
 };
