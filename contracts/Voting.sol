@@ -6,12 +6,20 @@ contract Voting {
     //counter for every candidate; will form the id in the mapping
     uint256 candidateCount = 0;
 
-    //enable/disable voting
-    bool public votingStatus;
+    //the state of the voting
+    enum VotingStatus {
+        ready,
+        ongoing,
+        ended,
+        result
+    }
+
+    VotingStatus public status;
+
     string public votingAccess;
 
     constructor() {
-        votingStatus = false;
+        status = VotingStatus.ready;
     }
 
     //EVENTS
@@ -26,6 +34,7 @@ contract Voting {
         uint256 id;
         string name;
         uint256 vote;
+        string imgUrl;
     }
 
     //MAPPING
@@ -46,7 +55,7 @@ contract Voting {
     modifier canVote() {
         require(!allVoters[msg.sender], "You can vote only once");
         require(candidateCount > 0, "No candidate added");
-        require(votingStatus, "Voting closed");
+        require(status == VotingStatus.ongoing, "Voting closed");
         _;
     }
 
@@ -59,13 +68,18 @@ contract Voting {
 
     //addCandidate function
     //only the chairman can add a candidate
-    function addCandidate(string memory _name)
+    function addCandidate(string memory _name, string memory _imgUrl)
         external
         eligibleCandidate(_name)
     {
         //create a new struct candidate
         //mapping the candidatecount as ID to the dandidate data
-        allCandidates[candidateCount] = Candidate(candidateCount, _name, 0);
+        allCandidates[candidateCount] = Candidate(
+            candidateCount,
+            _name,
+            0,
+            _imgUrl
+        );
         //increment the count each time a candidate is added
         candidateCount++;
 
@@ -102,11 +116,16 @@ contract Voting {
     function getAllCandidates()
         external
         view
-        returns (string[] memory, uint256[] memory)
+        returns (
+            string[] memory,
+            uint256[] memory,
+            string[] memory
+        )
     {
         //names and ids to be returned
         string[] memory names = new string[](candidateCount);
         uint256[] memory ids = new uint256[](candidateCount);
+        string[] memory imgUrl = new string[](candidateCount);
 
         //iterate all the candidates
         //assign to the array at an index of their ID
@@ -114,9 +133,10 @@ contract Voting {
             Candidate storage candi = allCandidates[i];
             names[i] = candi.name;
             ids[i] = candi.id;
+            imgUrl[i] = candi.imgUrl;
         }
         // return the arrays
-        return (names, ids);
+        return (names, ids, imgUrl);
     }
 
     //getting results of vote
@@ -125,6 +145,8 @@ contract Voting {
         view
         returns (string[] memory, uint256[] memory)
     {
+        //result can only be seen if status is "result"
+        require(status == VotingStatus.result, "You can't view result yet");
         // array variables for names and vote of candidates
         string[] memory names = new string[](candidateCount);
         uint256[] memory votes = new uint256[](candidateCount);
@@ -142,11 +164,21 @@ contract Voting {
 
     //enable voting function
     function enableVoting() public {
-        votingStatus = true;
+        status = VotingStatus.ongoing;
     }
 
     // disableVoting function
     function disableVoting() public {
-        votingStatus = false;
+        status = VotingStatus.ended;
+    }
+
+    //allowing for compile result
+    function allowResult() public {
+        status = VotingStatus.result;
+    }
+
+    //get election status
+    function getVotingStatus() public view returns (VotingStatus) {
+        return status;
     }
 }
