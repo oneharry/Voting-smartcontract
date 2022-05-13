@@ -2,11 +2,11 @@
 pragma solidity ^0.8.0;
 
 import "./Voting.sol";
-import "./Token.sol";
+// import "./Token.sol";
 
 contract ManageVoting {
     Voting voting;
-    Token token;
+    // Token token;
 
     address public owner;
     string[] public nameElections;
@@ -14,8 +14,8 @@ contract ManageVoting {
 
     //sets owner,
     //owner added as a stakeholder
-    constructor(address _address, address _token) {
-        token = Token(_token);
+    constructor(address _address) {
+        // token = Token(_token);
         voting = Voting(_address);
         owner = msg.sender;
     }
@@ -47,17 +47,17 @@ contract ManageVoting {
         _;
     }
 
-    modifier staffOnly() {
-        uint256 balance = token.balanceOf(msg.sender);
-        require(balance > 99, "You are not a staff");
-        _;
-    }
+    // modifier staffOnly() {
+    //     uint256 balance = token.balanceOf(msg.sender);
+    //     require(balance > 99, "You are not a staff");
+    //     _;
+    // }
 
-    modifier bodOnly() {
-        uint256 balance = token.balanceOf(msg.sender);
-        require(balance > 199, "You are not a BOD");
-        _;
-    }
+    // modifier bodOnly() {
+    //     uint256 balance = token.balanceOf(msg.sender);
+    //     require(balance > 199, "You are not a BOD");
+    //     _;
+    // }
 
     modifier stakeholderOnly() {
         require(stakeholders[msg.sender], "You are not a stakeholder");
@@ -88,7 +88,7 @@ contract ManageVoting {
     }
 
     //add stakeholder
-    function setStakeholders(address _adr) public staffOnly returns (bool) {
+    function setStakeholders(address _adr) public onlyChairman returns (bool) {
         return stakeholders[_adr] = true;
     }
 
@@ -127,30 +127,30 @@ contract ManageVoting {
     {
         require(stakeholders[msg.sender], "You are not a stakeholder");
 
-        string memory va = elections[_electionName].getVotingAccess();
+        // string memory va = elections[_electionName].getVotingAccess();
 
-        if (keccak256(bytes(va)) == keccak256(bytes("bod"))) {
-            uint256 balance = token.balanceOf(msg.sender);
-            require(
-                balance > 199 * 10**18,
-                "You are not a member of the board of directors"
-            );
-        }
+        // if (keccak256(bytes(va)) == keccak256(bytes("bod"))) {
+        //     uint256 balance = token.balanceOf(msg.sender);
+        //     require(
+        //         balance > 199 * 10**18,
+        //         "You are not a member of the board of directors"
+        //     );
+        // }
 
-        if (keccak256(bytes(va)) == keccak256(bytes("staff"))) {
-            uint256 balance = token.balanceOf(msg.sender);
-            require(
-                balance > 99 * 10**18,
-                "You are not a member of the staffs"
-            );
-        }
+        // if (keccak256(bytes(va)) == keccak256(bytes("staff"))) {
+        //     uint256 balance = token.balanceOf(msg.sender);
+        //     require(
+        //         balance > 99 * 10**18,
+        //         "You are not a member of the staffs"
+        //     );
+        // }
 
-        if (keccak256(bytes(va)) == keccak256(bytes("student"))) {
-            uint256 balance = token.balanceOf(msg.sender);
-            require(balance < 99 * 10**18, "You are not a member of student");
-        }
-
-        elections[_electionName].vote(_candidateID);
+        // if (keccak256(bytes(va)) == keccak256(bytes("student"))) {
+        //     uint256 balance = token.balanceOf(msg.sender);
+        //     require(balance < 99 * 10**18, "You are not a member of student");
+        // }
+        address voterAddress = msg.sender;
+        elections[_electionName].vote(_candidateID, voterAddress);
         emit Vote(msg.sender, _electionName, _candidateID);
         return true;
     }
@@ -182,22 +182,42 @@ contract ManageVoting {
         return elections[_electionName].compileResult();
     }
 
+
+    //number of voter
+    function getNumberOfVoters(string memory _electionName) public view returns (uint) {
+        return elections[_electionName].getNumberOfVoters();
+    }
+
+
+    //get voters voting status
+
+    function getVoter(string memory _electionName) public view returns (bool) {
+        return elections[_electionName].getVoters();
+    }
+
+    function getVotingStatus(string memory _electionName)
+    public
+    view returns(Voting.VotingStatus) {
+        return elections[_electionName].getVotingStatus();
+    }
+
+
     function giveStaffRole(address _adr) public onlyChairman {
-        token.transfer(_adr, 100 * 10**18);
+        // token.transfer(_adr, 100 * 10**18);
         stakeholders[_adr] = true;
         staff[_adr] = true;
         emit AddStaff(_adr);
     }
 
     function giveBodRole(address _adr) public onlyChairman {
-        token.transfer(_adr, 200 * 10**18);
+        // token.transfer(_adr, 200 * 10**18);
         stakeholders[_adr] = true;
         bod[_adr] = true;
         emit AddBod(_adr);
     }
 
     function giveStakeholderRole(address _adr) public onlyChairman {
-        token.transfer(_adr, 10 * 10**18);
+        // token.transfer(_adr, 10 * 10**18);
         stakeholders[_adr] = true;
         emit AddStakeholder(_adr);
     }

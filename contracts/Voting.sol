@@ -18,6 +18,8 @@ contract Voting {
 
     string public votingAccess;
 
+    uint public numberOfVoters;
+
     constructor() {
         status = VotingStatus.ready;
     }
@@ -52,8 +54,8 @@ contract Voting {
     //checks for who can vote
     //user can only vote once
     //Voting must be enabled
-    modifier canVote() {
-        require(!allVoters[msg.sender], "You can vote only once");
+    modifier canVote(address adr) {
+        require(!allVoters[adr], "You can vote only once");
         require(candidateCount > 0, "No candidate added");
         require(status == VotingStatus.ongoing, "Voting closed");
         _;
@@ -98,15 +100,27 @@ contract Voting {
         return votingAccess;
     }
 
+    //get voters status
+    function getVoters() public view returns (bool) {
+        return allVoters[msg.sender];
+    }
+
+    //number of voters
+    function getNumberOfVoters() public view returns (uint) {
+        return numberOfVoters;
+    }
+
+    
     //Voting function
     //takes the candidate of choices ID as argument
-    function vote(uint256 _candidateID) external canVote returns (bool) {
+    function vote(uint256 _candidateID, address adr) external canVote(adr) returns (bool) {
         //increment the candidates vote by 1
         allCandidates[_candidateID].vote = allCandidates[_candidateID].vote + 1;
 
         //mark the voter as having voted
-        allVoters[msg.sender] = true;
+        allVoters[adr] = true;
 
+        numberOfVoters = numberOfVoters + 1;
         //emit the event
         emit Voted(_candidateID);
         return true;
@@ -179,6 +193,8 @@ contract Voting {
 
     //get election status
     function getVotingStatus() public view returns (VotingStatus) {
+        
+        
         return status;
     }
 }

@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Token is ERC20, Ownable {
     uint256 public _totalSupply;
-    address private payC;
+
 
     mapping(address => uint256) balances;
     mapping(address => mapping(address => uint256)) allowed;
